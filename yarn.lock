@@ -1158,6 +1158,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bufbuild/protobuf@npm:^2.0.0":
+  version: 2.7.0
+  resolution: "@bufbuild/protobuf@npm:2.7.0"
+  checksum: 7456c9d7d3b1bda3153f7c92ea95c637e90d7d04a171e25eb8321762bbc70883b88408c4eb7077c3763ab705c59f63885a2301a9f8c9f419981534fec214d682
+  languageName: node
+  linkType: hard
+
 "@bull-board/api@npm:6.12.7, @bull-board/api@npm:^6.9.1":
   version: 6.12.7
   resolution: "@bull-board/api@npm:6.12.7"
@@ -5233,6 +5240,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"case-anything@npm:^2.1.13":
+  version: 2.1.13
+  resolution: "case-anything@npm:2.1.13"
+  checksum: c39c69d7e418337b6006a9692f13c2b257e907e867149a102e9beb7e9d2d52da14e754da1f4e4ce82a866d86d93047e522f64360bda54e7d7c308f4cdd736c3d
+  languageName: node
+  linkType: hard
+
 "chainsaw@npm:~0.1.0":
   version: 0.1.0
   resolution: "chainsaw@npm:0.1.0"
@@ -6044,6 +6058,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"detect-libc@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "detect-libc@npm:1.0.3"
+  bin:
+    detect-libc: ./bin/detect-libc.js
+  checksum: daaaed925ffa7889bd91d56e9624e6c8033911bb60f3a50a74a87500680652969dbaab9526d1e200a4c94acf80fc862a22131841145a0a8482d60a99c24f4a3e
+  languageName: node
+  linkType: hard
+
 "detect-libc@npm:^2.0.0, detect-libc@npm:^2.0.1, detect-libc@npm:^2.0.3":
   version: 2.0.4
   resolution: "detect-libc@npm:2.0.4"
@@ -6142,6 +6165,15 @@ __metadata:
   version: 16.4.5
   resolution: "dotenv@npm:16.4.5"
   checksum: 301a12c3d44fd49888b74eb9ccf9f07a1f5df43f489e7fcb89647a2edcd84c42d6bc349dc8df099cd18f07c35c7b04685c1a4f3e6a6a9e6b30f8d48c15b7f49c
+  languageName: node
+  linkType: hard
+
+"dprint-node@npm:^1.0.8":
+  version: 1.0.8
+  resolution: "dprint-node@npm:1.0.8"
+  dependencies:
+    detect-libc: ^1.0.3
+  checksum: ac53b71296d155664319877f0e8c9fe94e084457ce9aae68081b9dd7165916f2829222923c59b1399d95680362f18a8da5994e7f76a8f52035e02bbd14ba76bc
   languageName: node
   linkType: hard
 
@@ -11992,6 +12024,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ts-poet@npm:^6.12.0":
+  version: 6.12.0
+  resolution: "ts-poet@npm:6.12.0"
+  dependencies:
+    dprint-node: ^1.0.8
+  checksum: 05fec86d188a0727433ae2deea950161c43ee433526702b75cc19858b90a20642b075d99e1029efcafccb59d9e98492c8e41fbbc945615bbff0e58922f820e1c
+  languageName: node
+  linkType: hard
+
+"ts-proto-descriptors@npm:2.0.0":
+  version: 2.0.0
+  resolution: "ts-proto-descriptors@npm:2.0.0"
+  dependencies:
+    "@bufbuild/protobuf": ^2.0.0
+  checksum: 7b268c0bdab7b24236aecb125c33502575790f69f4f384cad3423ff05a7999abe381bd1331e1ab2793dbcac687eb8411ae7d73676e8adcff26666cc4a1cece99
+  languageName: node
+  linkType: hard
+
+"ts-proto@npm:^2.7.7":
+  version: 2.7.7
+  resolution: "ts-proto@npm:2.7.7"
+  dependencies:
+    "@bufbuild/protobuf": ^2.0.0
+    case-anything: ^2.1.13
+    ts-poet: ^6.12.0
+    ts-proto-descriptors: 2.0.0
+  bin:
+    protoc-gen-ts_proto: protoc-gen-ts_proto
+  checksum: 8176abe7d5e514e0aca30c3b8778c9e6102284f601e4c97906322c56f74b35fcff5b332c69584c7b99892449e3e8d46b8008e72ab6b89c49e5ffeed5c62b391d
+  languageName: node
+  linkType: hard
+
 "tsconfig-paths-webpack-plugin@npm:4.2.0":
   version: 4.2.0
   resolution: "tsconfig-paths-webpack-plugin@npm:4.2.0"
@@ -12450,6 +12514,7 @@ __metadata:
     ts-jest: ^29.1.3
     ts-loader: ^6.2.1
     ts-node: ^10.9.1
+    ts-proto: ^2.7.7
     tsconfig-paths: ^4.1.0
     typescript: ^4.8.4
     ulid: ^2.3.0

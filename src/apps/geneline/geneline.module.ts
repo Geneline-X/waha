@@ -11,8 +11,9 @@ import { QueueName } from './consumers/QueueName';
 import { GenelineMessageAnyConsumer } from './consumers/waha/message.any';
 import { GenelineWAHAQueueService } from './services/GenelineWAHAQueueService';
 import { GenelineAppService } from './services/GenelineAppService';
+import { GenelineController } from './api/geneline.controller';
 
-const CONTROLLERS = [];
+const CONTROLLERS = [GenelineController];
 
 const IMPORTS = lodash.flatten([
   RegisterAppQueue({

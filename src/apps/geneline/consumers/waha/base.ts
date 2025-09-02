@@ -34,16 +34,16 @@ export abstract class GenelineWAHABaseConsumer {
     job: Job<EventData, any, WAHAEvents>,
     appId: string,
   ): Promise<GenelineDIContainer> {
-    // For now, we'll need to get the config from somewhere
-    // TODO: Implement proper config retrieval
-    const config = await this.getAppConfig(job.data.app);
-    return new GenelineDIContainer(config, this.logger);
-  }
-
-  private async getAppConfig(appId: string): Promise<GenelineAppConfig> {
-    // TODO: Implement proper config retrieval from database/storage
-    // For now, return a placeholder
-    throw new Error('App config retrieval not implemented yet');
+    const knex = this.manager.store.getWAHADatabase();
+    const { AppRepository } = await import('@waha/apps/app_sdk/storage/AppRepository');
+    const appRepository = new AppRepository(knex);
+    const app = await appRepository.getById(appId);
+    
+    if (!app) {
+      throw new Error(`Geneline app with ID '${appId}' not found`);
+    }
+    
+    return new GenelineDIContainer(app.config as GenelineAppConfig, this.logger);
   }
 
   async processJob(job: Job<EventData, any, WAHAEvents>): Promise<any> {
