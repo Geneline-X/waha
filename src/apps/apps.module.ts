@@ -11,6 +11,7 @@ import { AppsEnabledService } from '@waha/apps/app_sdk/services/AppsEnabledServi
 import { AppsService } from '@waha/apps/app_sdk/services/IAppsService';
 import { ChatwootLocalesController } from '@waha/apps/chatwoot/api/chatwoot.locales.controller';
 import { ChatWootExports } from '@waha/apps/chatwoot/chatwoot.module';
+import { GenelineExports } from '@waha/apps/geneline/geneline.module';
 import { parseBool } from '@waha/helpers';
 import { RMutexModule } from '@waha/modules/rmutex';
 
@@ -67,17 +68,19 @@ const IMPORTS = [
     },
   }),
   ...ChatWootExports.imports,
+  ...GenelineExports.imports,
 ];
 
 const AppsEnabled = {
   imports: IMPORTS,
-  controllers: [AppsController, ...ChatWootExports.controllers],
+  controllers: [AppsController, ...ChatWootExports.controllers, ...GenelineExports.controllers],
   providers: [
     {
       provide: AppsService,
       useClass: AppsEnabledService,
     },
     ...ChatWootExports.providers,
+    ...GenelineExports.providers,
   ],
 };
 

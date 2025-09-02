@@ -3,6 +3,7 @@ import { migrate } from '@waha/apps/app_sdk/migrations';
 import { IAppService } from '@waha/apps/app_sdk/services/IAppService';
 import { IAppsService } from '@waha/apps/app_sdk/services/IAppsService';
 import { ChatWootAppService } from '@waha/apps/chatwoot/services/ChatWootAppService';
+import { GenelineAppService } from '@waha/apps/geneline/services/GenelineAppService';
 import { DataStore } from '@waha/core/abc/DataStore';
 import { SessionManager } from '@waha/core/abc/manager.abc';
 import { WhatsappSession } from '@waha/core/abc/session.abc';
@@ -17,6 +18,7 @@ import { AppRepository } from '../storage/AppRepository';
 export class AppsEnabledService implements IAppsService {
   constructor(
     protected readonly chatwootService: ChatWootAppService,
+    protected readonly genelineService: GenelineAppService,
     @InjectPinoLogger('AppsService')
     protected logger: PinoLogger,
   ) {}
@@ -133,6 +135,8 @@ export class AppsEnabledService implements IAppsService {
     switch (app.app) {
       case AppName.chatwoot:
         return this.chatwootService;
+      case AppName.geneline:
+        return this.genelineService;
       default:
         throw new Error(`App '${app.app}' not supported`);
     }
