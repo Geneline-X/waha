@@ -16,8 +16,7 @@ export class GenelineDIContainer {
   WAHASelf(): WAHASelf {
     if (!this.wahaSelf) {
       this.wahaSelf = new WAHASelf();
-      const logging = new AxiosLogging(this.Logger());
-      logging.applyTo(this.wahaSelf.client);
+      // Skip axios logging to avoid logger compatibility issues
     }
     return this.wahaSelf;
   }

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geneline AI - WAHA Dashboard</title>
+    <style>
+        /* Dashboard-compatible styles */
+        .geneline-tab {
+            padding: 20px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .geneline-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .geneline-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+        }
+        
+        .config-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        
+        .btn:hover {
+            background: #4338ca;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .app-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .app-card h3 {
+            margin: 0 0 10px 0;
+            color: #374151;
+        }
+        
+        .app-card p {
+            margin: 5px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .app-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f4f6;
+            border-top: 2px solid #4f46e5;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="geneline-tab">
+        <div class="geneline-header">
+            <h1>🤖 Geneline AI Configuration</h1>
+            <p>Configure AI-powered WhatsApp automation</p>
+        </div>
+        
+        <div id="alert" class="alert"></div>
+        
+        <div class="config-card">
+            <h2>Add New Configuration</h2>
+            <form id="genelineForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="session">WhatsApp Session</label>
+                        <select id="session" required>
+                            <option value="">Select session...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="chatbotId">Chatbot ID</label>
+                        <input type="text" id="chatbotId" placeholder="your-chatbot-id" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiUrl">Geneline API URL</label>
+                    <input type="url" id="apiUrl" placeholder="https://api.geneline.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiKey">API Key</label>
+                    <input type="password" id="apiKey" placeholder="Enter your API key" required>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" class="btn btn-secondary" onclick="testConnection()">Test Connection</button>
+                    <button type="submit" class="btn">Save Configuration</button>
+                </div>
+            </form>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Testing connection...</p>
+            </div>
+        </div>
+        
+        <div class="config-card">
+            <h2>Active Configurations</h2>
+            <div id="appsList" class="apps-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSessions();
+            // Load apps after sessions are loaded
+            setTimeout(loadApps, 1000);
+        });
+        
+        // Reload apps when session selection changes
+        document.getElementById('session').addEventListener('change', loadApps);
+        
+        async function loadSessions() {
+            try {
+                const response = await fetch(`${API_BASE}/sessions`);
+                const sessions = await response.json();
+                
+                const sessionSelect = document.getElementById('session');
+                sessionSelect.innerHTML = '<option value="">Select session...</option>';
+                
+                sessions.forEach(session => {
+                    const option = document.createElement('option');
+                    option.value = session.name;
+                    option.textContent = `${session.name} (${session.status})`;
+                    sessionSelect.appendChild(option);
+                });
+            } catch (error) {
+                showAlert('Failed to load sessions: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadApps() {
+            try {
+                // Get the selected session or use 'default' if none selected
+                const sessionSelect = document.getElementById('session');
+                const session = sessionSelect.value || 'default';
+                
+                const response = await fetch(`${API_BASE}/apps?session=${encodeURIComponent(session)}`);
+                const apps = await response.json();
+                
+                const genelineApps = apps.filter(app => app.app === 'geneline');
+                const appsList = document.getElementById('appsList');
+                
+                if (genelineApps.length === 0) {
+                    appsList.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px; grid-column: 1 / -1;">No Geneline configurations yet.</p>';
+                    return;
+                }
+                
+                appsList.innerHTML = genelineApps.map(app => `
+                    <div class="app-card">
+                        <h3>Session: ${app.session}</h3>
+                        <p><strong>API URL:</strong> ${app.config.apiUrl}</p>
+                        <p><strong>Chatbot ID:</strong> ${app.config.chatbotId}</p>
+                        <p><strong>Status:</strong> <span style="color: #059669;">Active</span></p>
+                        <div class="app-actions">
+                            <button class="btn btn-small btn-secondary" onclick="viewAnalytics('${app.id}', '${app.session}')">Analytics</button>
+                            <button class="btn btn-small btn-danger" onclick="deleteApp('${app.id}')">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                showAlert('Failed to load configurations: ' + error.message, 'error');
+            }
+        }
+        
+        async function testConnection() {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const chatbotId = document.getElementById('chatbotId').value;
+            
+            if (!apiUrl || !apiKey || !chatbotId) {
+                showAlert('Please fill in all fields before testing', 'error');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                const response = await fetch(`${API_BASE}/geneline/test-connection`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiUrl, apiKey, chatbotId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ Connection successful!', 'success');
+                } else {
+                    showAlert('❌ Connection failed: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Test failed: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        document.getElementById('genelineForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const session = document.getElementById('session').value;
+            const chatbotId = document.getElementById('chatbotId').value;
+            const apiUrl = document.getElementById('apiUrl').value;
+            const apiKey = document.getElementById('apiKey').value;
+            
+            // Validate required fields
+            if (!session || !chatbotId || !apiUrl || !apiKey) {
+                showAlert('❌ Please fill in all required fields', 'error');
+                return;
+            }
+            
+            const formData = {
+                id: `geneline-${session}-${chatbotId}`,
+                session: session,
+                app: 'geneline',
+                config: {
+                    apiUrl: apiUrl,
+                    apiKey: apiKey,
+                    chatbotId: chatbotId
+                }
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/apps`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    showAlert('🎉 Configuration saved successfully!', 'success');
+                    document.getElementById('genelineForm').reset();
+                    loadApps();
+                } else {
+                    const error = await response.json();
+                    showAlert('❌ Save failed: ' + error.message, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Save failed: ' + error.message, 'error');
+            }
+        });
+        
+        async function deleteApp(appId) {
+            if (!confirm('Delete this Geneline configuration?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/apps/${appId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showAlert('✅ Configuration deleted', 'success');
+                    loadApps();
+                } else {
+                    showAlert('❌ Delete failed', 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Delete failed: ' + error.message, 'error');
+            }
+        }
+        
+        async function viewAnalytics(appId, session) {
+            try {
+                const response = await fetch(`${API_BASE}/geneline/analytics?appId=${appId}&session=${session}&since=24h`);
+                const analytics = await response.json();
+                
+                const stats = [
+                    `API Requests: ${analytics.apiRequests || 0}`,
+                    `Avg Response Time: ${analytics.avgRequestMs || 0}ms`,
+                    `AI Input Characters: ${analytics.aiInputChars || 0}`,
+                    `AI Output Characters: ${analytics.aiOutputChars || 0}`
+                ].join('\n');
+                
+                alert(`📊 Analytics (24h)\n\n${stats}`);
+            } catch (error) {
+                showAlert('❌ Analytics failed: ' + error.message, 'error');
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Auto-refresh apps every 30 seconds
+        setInterval(loadApps, 30000);
+    </script>
+</body>
+</html>

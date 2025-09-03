@@ -1,9 +1,9 @@
 import { Processor } from '@nestjs/bullmq';
 import { JOB_CONCURRENCY } from '@waha/apps/app_sdk/constants';
+import { AppConsumer } from '@waha/apps/app_sdk/AppConsumer';
 import { QueueName } from '@waha/apps/geneline/consumers/QueueName';
 import { EventData } from '@waha/apps/geneline/consumers/types';
 import { GenelineAPI } from '@waha/apps/geneline/client/GenelineAPI';
-import { GenelineWAHABaseConsumer, IMessageInfo } from '@waha/apps/geneline/consumers/waha/base';
 import { WAHASessionAPI } from '@waha/apps/chatwoot/session/WAHASelf';
 import { SessionManager } from '@waha/core/abc/manager.abc';
 import { RMutexService } from '@waha/modules/rmutex/rmutex.service';
@@ -12,36 +12,69 @@ import { WAMessage, MessageSource } from '@waha/structures/responses.dto';
 import { WAHAWebhookMessageAny } from '@waha/structures/webhooks.dto';
 import { Job } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
+import { GenelineDIContainer } from '@waha/apps/geneline/di/DIContainer';
+import { GenelineAppConfig } from '@waha/apps/geneline/dto/config.dto';
+import { AppRepository } from '@waha/apps/app_sdk/storage/AppRepository';
+
+interface IMessageInfo {
+  fromMe: boolean;
+  source?: string;
+}
 
 @Processor(QueueName.WAHA_MESSAGE_ANY, { concurrency: JOB_CONCURRENCY })
-export class GenelineMessageAnyConsumer extends GenelineWAHABaseConsumer {
+export class GenelineMessageAnyConsumer extends AppConsumer {
   constructor(
     protected readonly manager: SessionManager,
     log: PinoLogger,
     rmutex: RMutexService,
   ) {
-    super(manager, log, rmutex, 'GenelineMessageAnyConsumer');
+    super('geneline', 'GenelineMessageAnyConsumer', log, rmutex);
   }
 
-  GetChatId(event: WAHAWebhookMessageAny): string {
-    return event.payload.from;
-  }
-
-  async Process(
-    job: Job<EventData, any, WAHAEvents>,
-    info: IMessageInfo,
-  ): Promise<any> {
-    const container = await this.DIContainer(job, job.data.app);
+  async processJob(job: Job<EventData, any, WAHAEvents>): Promise<any> {
     const event: WAHAWebhookMessageAny = job.data.event as any;
-    const session = new WAHASessionAPI(event.session, container.WAHASelf());
-    const handler = new GenelineMessageAnyHandler(
-      container.Logger(),
-      info,
-      session,
-      container.GenelineAPI(),
-      job.data.app,
-    );
-    return await handler.handle(event);
+    const chatId = event.payload.from;
+    const mutexKey = `geneline-${job.data.app}-${chatId}`;
+
+    try {
+      return await this.withMutex(job, mutexKey, async () => {
+        const container = await this.DIContainer(job, job.data.app);
+        const session = new WAHASessionAPI(event.session, container.WAHASelf());
+        const info: IMessageInfo = {
+          fromMe: event.payload?.fromMe || false,
+          source: event.payload?.source,
+        };
+        
+        const handler = new GenelineMessageAnyHandler(
+          container.Logger(),
+          info,
+          session,
+          container.GenelineAPI(),
+          job.data.app,
+        );
+        await handler.handle(event);
+        return;
+      });
+    } catch (error) {
+      // Don't throw to prevent retries
+      return;
+    }
+  }
+
+  async DIContainer(
+    job: Job<EventData, any, WAHAEvents>,
+    appId: string,
+  ): Promise<GenelineDIContainer> {
+    const knex = this.manager.store.getWAHADatabase();
+    // Use the imported AppRepository instead of dynamic import
+    const appRepository = new AppRepository(knex);
+    const app = await appRepository.getById(appId);
+    
+    if (!app) {
+      throw new Error(`Geneline app with ID '${appId}' not found`);
+    }
+    
+    return new GenelineDIContainer(app.config as GenelineAppConfig, { logger: this.logger } as PinoLogger);
   }
 }
 
@@ -58,14 +91,12 @@ class GenelineMessageAnyHandler {
     const payload = event.payload;
 
     // Skip messages from the app itself to prevent loops
-    if (payload.fromMe || payload.source === MessageSource.APP) {
-      this.logger.debug('Skipping message from app itself to prevent loop');
+    if (payload.fromMe) {
       return;
     }
 
     // Skip non-text messages for now (Geneline might support more later)
     if (!payload.body) {
-      this.logger.debug('Skipping non-text message');
       return;
     }
 
@@ -84,11 +115,10 @@ class GenelineMessageAnyHandler {
           text: aiResponse.text,
           session: event.session,
         });
-        this.logger.info(`Sent AI response to ${payload.from}`);
       }
     } catch (error) {
-      this.logger.error('Error processing message with Geneline AI:', error);
-      throw error;
+      // Don't throw error to prevent infinite retries
+      return;
     }
   }
 }

@@ -108,7 +108,7 @@ function checkApiKey() {
   }
 }
 
-const enabled = parseBool(process.env.WAHA_APPS_ENABLED);
+const enabled = true; // Force enable apps module
 if (enabled) {
   checkApiKey();
 }

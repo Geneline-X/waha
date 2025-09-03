@@ -29,11 +29,7 @@ export class GenelineAppService implements IAppService {
     this.logger.info(`Geneline app deleted: ${app.id} for session: ${app.session}`);
   }
 
-  async beforeSessionStart(
-    app: App<GenelineAppConfig>,
-    session: WhatsappSession,
-  ) {
+  async beforeSessionStart(app: App<GenelineAppConfig>, session: WhatsappSession): Promise<void> {
     this.genelineWAHAQueueService.listenEvents(app.id, session);
-    this.logger.info(`Geneline app started listening for session: ${session.name}`);
   }
 }

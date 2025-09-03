@@ -1,6 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
 import { Injectable } from '@nestjs/common';
-import { AxiosLogging } from '@waha/apps/app_sdk/AxiosLogging';
 import { GenelineAppConfig } from '@waha/apps/geneline/dto/config.dto';
 import { PinoLogger } from 'nestjs-pino';
 
@@ -21,9 +20,7 @@ export class GenelineAPI {
       timeout: 30000, // 30 seconds
     });
 
-    // Apply logging interceptors
-    const logging = new AxiosLogging(this.logger);
-    logging.applyTo(this.client);
+    // Skip axios logging for now to avoid logger compatibility issues
   }
 
   async sendMessage(params: {
