@@ -5,7 +5,7 @@ import {
   JobRemoveOptions,
   merge,
 } from '@waha/apps/app_sdk/constants';
-import lodash from 'lodash';
+import { flatten } from 'lodash';
 
 import { QueueName } from './consumers/QueueName';
 import { GenelineMessageAnyConsumer } from './consumers/waha/message.any';
@@ -15,7 +15,7 @@ import { GenelineController } from './api/geneline.controller';
 
 const CONTROLLERS = [GenelineController];
 
-const IMPORTS = lodash.flatten([
+const IMPORTS = flatten([
   RegisterAppQueue({
     name: QueueName.WAHA_MESSAGE_ANY,
     defaultJobOptions: merge(ExponentialRetriesJobOptions, JobRemoveOptions),

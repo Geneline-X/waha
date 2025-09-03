@@ -132,7 +132,35 @@ axiosRetry(axios, { retries: 3 });
 const CHROME_PATH = '/usr/bin/google-chrome-stable';
 const CHROMIUM_PATH = '/usr/bin/chromium';
 
+// Windows Chrome paths
+const WINDOWS_CHROME_PATHS = [
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Users\\%USERNAME%\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe',
+];
+
+// Windows Edge path (fallback)
+const WINDOWS_EDGE_PATH = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+
 export function getBrowserExecutablePath() {
+  // Check if we're on Windows
+  if (process.platform === 'win32') {
+    // Try Windows Chrome paths
+    for (const chromePath of WINDOWS_CHROME_PATHS) {
+      const expandedPath = chromePath.replace('%USERNAME%', process.env.USERNAME || '');
+      if (fs.existsSync(expandedPath)) {
+        return expandedPath;
+      }
+    }
+    // Fallback to Edge on Windows
+    if (fs.existsSync(WINDOWS_EDGE_PATH)) {
+      return WINDOWS_EDGE_PATH;
+    }
+    // Return undefined to let Puppeteer find the browser automatically
+    return undefined;
+  }
+  
+  // Linux/Unix paths
   if (fs.existsSync(CHROME_PATH)) {
     return CHROME_PATH;
   }

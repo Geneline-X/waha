@@ -586,6 +586,9 @@ export class WhatsappSessionWebJSCore extends WhatsappSession {
   }
 
   async getScreenshot(): Promise<Buffer> {
+    if (!this.whatsapp?.pupPage) {
+      throw new Error('WhatsApp session not initialized or page not available');
+    }
     const screenshot = await this.whatsapp.pupPage.screenshot({
       encoding: 'binary',
     });

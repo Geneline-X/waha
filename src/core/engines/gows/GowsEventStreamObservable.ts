@@ -32,7 +32,7 @@ export class GowsEventStreamObservable extends Observable<EnginePayload> {
       });
 
       stream.on('end', (...args) => {
-        this.logger.debug('Stream ended', args);
+        this.logger.debug('Stream ended: ' + JSON.stringify(args));
         subscriber?.complete();
         subscriber = null;
       });

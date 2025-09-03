@@ -120,7 +120,14 @@ export class WebjsClientCore extends Client {
   async destroy() {
     this.events.removeAllListeners();
     this.wpage?.removeAllListeners();
-    await super.destroy();
+    try {
+      await super.destroy();
+    } catch (error) {
+      // Ignore errors from destroying already null/closed resources
+      if (!error.message?.includes('Cannot read properties of null')) {
+        throw error;
+      }
+    }
   }
 
   async setPushName(name: string) {
