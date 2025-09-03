@@ -182,6 +182,12 @@
         <div class="content">
             <div id="alert" class="alert"></div>
             
+            <div class="form-group">
+                <label for="wahaApiKey">WAHA API Key (X-Api-Key)</label>
+                <input type="password" id="wahaApiKey" placeholder="Enter WAHA API key">
+                <small>Used to authenticate requests to this WAHA server. Stored locally in your browser only.</small>
+            </div>
+
             <form id="genelineForm">
                 <div class="form-group">
                     <label for="session">WhatsApp Session</label>
@@ -229,39 +235,81 @@
 
     <script>
         const API_BASE = '/api';
-        
+
+        // Helper: read/write API key and attach to requests
+        function getAuthHeaders(extra = {}) {
+            const key = (localStorage.getItem('waha_api_key') || '').trim();
+            return key ? { ...extra, 'X-Api-Key': key } : { ...extra };
+        }
+
+        function initAuth() {
+            const input = document.getElementById('wahaApiKey');
+            input.value = localStorage.getItem('waha_api_key') || '';
+            input.addEventListener('input', () => {
+                localStorage.setItem('waha_api_key', input.value.trim());
+            });
+        }
+
+        function getSelectedSession() {
+            return document.getElementById('session').value;
+        }
+
         // Load sessions on page load
         document.addEventListener('DOMContentLoaded', function() {
+            initAuth();
             loadSessions();
-            loadApps();
+            document.getElementById('session').addEventListener('change', loadApps);
         });
         
         async function loadSessions() {
             try {
-                const response = await fetch(`${API_BASE}/sessions`);
+                const response = await fetch(`${API_BASE}/sessions`, {
+                    headers: getAuthHeaders(),
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
                 const sessions = await response.json();
-                
+
                 const sessionSelect = document.getElementById('session');
                 sessionSelect.innerHTML = '<option value="">Select a session...</option>';
-                
+
                 sessions.forEach(session => {
                     const option = document.createElement('option');
                     option.value = session.name;
                     option.textContent = `${session.name} (${session.status})`;
                     sessionSelect.appendChild(option);
                 });
+
+                // Auto-select first session if none selected and load apps
+                if (!sessionSelect.value && sessions.length > 0) {
+                    sessionSelect.value = sessions[0].name;
+                }
+                if (sessionSelect.value) {
+                    await loadApps();
+                }
             } catch (error) {
-                showAlert('Failed to load sessions: ' + error.message, 'error');
+                showAlert('Failed to load sessions: ' + error.message + '. Ensure WAHA API Key is set.', 'error');
             }
         }
         
         async function loadApps() {
+            const session = getSelectedSession();
+            const appsList = document.getElementById('appsList');
+            if (!session) {
+                appsList.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">Select a session to view its Geneline apps.</p>';
+                return;
+            }
             try {
-                const response = await fetch(`${API_BASE}/apps`);
+                const response = await fetch(`${API_BASE}/apps?session=${encodeURIComponent(session)}` ,{
+                    headers: getAuthHeaders(),
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
                 const apps = await response.json();
-                
+
                 const genelineApps = apps.filter(app => app.app === 'geneline');
-                const appsList = document.getElementById('appsList');
                 
                 if (genelineApps.length === 0) {
                     appsList.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">No Geneline apps configured yet.</p>';
@@ -282,7 +330,7 @@
                     </div>
                 `).join('');
             } catch (error) {
-                showAlert('Failed to load apps: ' + error.message, 'error');
+                showAlert('Failed to load apps: ' + error.message + '. Ensure WAHA API Key is set.', 'error');
             }
         }
         
@@ -301,9 +349,7 @@
             try {
                 const response = await fetch(`${API_BASE}/geneline/test-connection`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify({
                         apiUrl,
                         apiKey,
@@ -341,9 +387,7 @@
             try {
                 const response = await fetch(`${API_BASE}/apps`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getAuthHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(formData)
                 });
                 
@@ -367,7 +411,8 @@
             
             try {
                 const response = await fetch(`${API_BASE}/apps/${appId}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: getAuthHeaders(),
                 });
                 
                 if (response.ok) {
@@ -383,7 +428,9 @@
         
         async function viewAnalytics(appId, session) {
             try {
-                const response = await fetch(`${API_BASE}/geneline/analytics?appId=${appId}&session=${session}&since=24h`);
+                const response = await fetch(`${API_BASE}/geneline/analytics?appId=${appId}&session=${session}&since=24h`, {
+                    headers: getAuthHeaders(),
+                });
                 const analytics = await response.json();
                 
                 alert(`Analytics for ${appId}:\n\nAPI Requests: ${analytics.apiRequests || 0}\nAvg Response Time: ${analytics.avgRequestMs || 0}ms\nAI Input Chars: ${analytics.aiInputChars || 0}\nAI Output Chars: ${analytics.aiOutputChars || 0}`);

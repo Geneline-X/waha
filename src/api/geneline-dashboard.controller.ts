@@ -18,4 +18,17 @@ export class GenelineDashboardController {
       res.status(404).send('Geneline dashboard tab not found');
     }
   }
+
+  @Get('/dashboard')
+  @ApiExcludeEndpoint()
+  async getDashboard(@Res() res: Response) {
+    try {
+      const filePath = join(process.cwd(), 'geneline-config.html');
+      const content = readFileSync(filePath, 'utf8');
+      res.setHeader('Content-Type', 'text/html');
+      res.send(content);
+    } catch (error) {
+      res.status(404).send('Dashboard not found');
+    }
+  }
 }
