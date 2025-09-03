@@ -10,7 +10,10 @@ export class GenelineDashboardController {
   @ApiExcludeEndpoint()
   async getGenelineDashboard(@Res() res: Response) {
     try {
-      const filePath = join(process.cwd(), 'geneline-dashboard-tab.html');
+      // Serve from built dashboard directory
+      // Dev: src/dashboard/geneline-dashboard-tab.html
+      // Prod: dist/dashboard/geneline-dashboard-tab.html
+      const filePath = join(__dirname, '..', 'dashboard', 'geneline-dashboard-tab.html');
       const content = readFileSync(filePath, 'utf8');
       res.setHeader('Content-Type', 'text/html');
       res.send(content);
