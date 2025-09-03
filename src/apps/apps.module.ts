@@ -18,7 +18,7 @@ import { RMutexModule } from '@waha/modules/rmutex';
 const IMPORTS = [
   BullModule.forRoot({
     connection: {
-      url: process.env.REDIS_URL || 'redis://:redis@localhost:6379',
+      url: process.env.REDIS_URL || 'redis://:redis@localhost:6379' ||'redis://:redis@redis-local:6379',
       maxRetriesPerRequest: null,
     },
     prefix: `waha-${process.env.WAHA_WORKER_ID}`,
@@ -26,7 +26,7 @@ const IMPORTS = [
   RedisModule.forRoot({
     closeClient: true,
     config: {
-      url: process.env.REDIS_URL || 'redis://:redis@localhost:6379',
+      url: process.env.REDIS_URL || 'redis://:redis@redis-local:6379' ||  'redis://:redis@localhost:6379',
       onClientCreated: async (client) => {
         try {
           await client.ping();

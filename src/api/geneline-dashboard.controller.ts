@@ -23,7 +23,10 @@ export class GenelineDashboardController {
   @ApiExcludeEndpoint()
   async getDashboard(@Res() res: Response) {
     try {
-      const filePath = join(process.cwd(), 'geneline-config.html');
+      // Serve the SPA entry from the dashboard folder (works in dev and prod)
+      // In dev: resolves to src/dashboard/index.html
+      // In prod: resolves to dist/dashboard/index.html
+      const filePath = join(__dirname, '..', 'dashboard', 'index.html');
       const content = readFileSync(filePath, 'utf8');
       res.setHeader('Content-Type', 'text/html');
       res.send(content);
